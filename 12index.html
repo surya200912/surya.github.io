@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>P.E.A.R.L x L.U.M.E.N Beast Mode</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;scroll-behavior:smooth;}
+body{font-family:'Roboto',sans-serif;background:#000;color:#fff;overflow:hidden;}
+canvas#bg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1}
+
+/* Splash */
+.splash{height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(circle,#00c6ff,#0072ff);}
+.splash h1{font-family:'Orbitron',sans-serif;font-size:3rem;}
+.enter-btn{margin-top:20px;padding:12px 25px;font-size:1.2rem;border:none;border-radius:25px;background:#fff;color:#0072ff;font-weight:bold;cursor:pointer;transition:0.3s;}
+.enter-btn:hover{background:#0072ff;color:#fff;}
+.portal{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);border-radius:50%;border:3px solid #00e0ff;width:20px;height:20px;animation:portalExpand 1.5s ease forwards;}
+@keyframes portalExpand{to{width:2000px;height:2000px;opacity:0;}}
+
+/* Navbar */
+nav{display:none;justify-content:space-around;padding:1rem;background:rgba(0,0,0,0.6);backdrop-filter:blur(8px);position:sticky;top:0;z-index:10;}
+nav a,nav button{color:#00c6ff;text-decoration:none;font-weight:bold;background:none;border:none;cursor:pointer;padding:0.5rem 1rem;border-radius:6px;transition:0.3s;}
+nav a:hover,nav a.active,nav button:hover{background:#00c6ff;color:#000;}
+
+/* Sections */
+section{display:none;max-width:1000px;margin:30px auto;background:rgba(255,255,255,0.05);padding:20px;border-radius:10px;}
+.hologram-scan{position:relative;overflow:hidden;}
+.hologram-scan::after{content:"";position:absolute;top:0;left:-100%;width:50%;height:100%;background:linear-gradient(120deg,transparent,rgba(0,230,255,0.5),transparent);animation:scan 0.8s forwards;}
+@keyframes scan{to{left:150%;}}
+h2{color:#00e0ff;border-bottom:2px solid #00c6ff;margin-bottom:10px;}
+
+/* Team Cards */
+.team-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+}
+.team-card {
+  background: rgba(0, 198, 255, 0.08);
+  border: 1px solid #00c6ff;
+  border-radius: 12px;
+  text-align: center;
+  padding: 20px;
+  transition: transform 0.3s, box-shadow 0.3s;
+  box-shadow: 0 0 15px rgba(0,198,255,0.3);
+}
+.team-card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 25px rgba(0,230,255,0.8);
+}
+.team-name {
+  font-weight: bold;
+  font-size: 1.2rem;
+  margin-bottom: 5px;
+  color: #00e0ff;
+}
+.team-role {
+  font-size: 0.95rem;
+  color: #ccc;
+}
+
+/* Chatbot */
+.ai-bubble{position:fixed;bottom:20px;right:20px;width:60px;height:60px;background:radial-gradient(circle,#00e0ff,#0072ff);border-radius:50%;display:flex;justify-content:center;align-items:center;cursor:pointer;box-shadow:0 0 20px #00c6ff;animation:pulse 2s infinite;}
+@keyframes pulse{0%{box-shadow:0 0 10px #00c6ff;}50%{box-shadow:0 0 25px #00e0ff;}100%{box-shadow:0 0 10px #00c6ff;}}
+.chatbot{position:fixed;bottom:-400px;right:20px;width:300px;height:350px;background:rgba(0,0,0,0.9);border:2px solid #00c6ff;border-radius:10px;display:flex;flex-direction:column;transition:0.4s;}
+.chat-header{padding:10px;background:#00c6ff;color:#000;font-weight:bold;}
+.chat-messages{flex:1;padding:10px;overflow-y:auto;font-size:0.9rem;}
+.chat-input{display:flex;}
+.chat-input input{flex:1;padding:8px;border:none;outline:none;}
+.chat-input button{padding:8px;background:#00c6ff;border:none;color:#000;font-weight:bold;cursor:pointer;}
+.message{margin-bottom:8px;}
+.user{color:#00e0ff;}
+.bot{color:#0f0;}
+
+/* Footer */
+footer{display:none;text-align:center;padding:15px;background:#000;color:#ccc;}
+</style>
+</head>
+<body>
+
+<canvas id="bg"></canvas>
+
+<!-- Sounds -->
+<audio id="bgMusic" src="https://cdn.pixabay.com/download/audio/2022/02/23/audio_futuristic.mp3?filename=futuristic-beat.mp3" loop></audio>
+<audio id="portalSound" src="https://cdn.pixabay.com/download/audio/2022/02/15/audio_portal.mp3?filename=portal-whoosh.mp3"></audio>
+<audio id="scanSound" src="https://cdn.pixabay.com/download/audio/2022/03/04/audio_scan.mp3?filename=scan-sound.mp3"></audio>
+<audio id="pingSound" src="https://cdn.pixabay.com/download/audio/2021/09/23/audio_ping.mp3?filename=ping.mp3"></audio>
+
+<div class="splash" id="splash">
+  <h1>P.E.A.R.L x L.U.M.E.N</h1>
+  <p>Flood Alert & Black Water Utilization</p>
+  <button class="enter-btn" onclick="enterApp()">Enter Website</button>
+</div>
+
+<nav id="nav">
+  <a href="#about" onclick="showTab('about',this)">About</a>
+  <a href="#impact" onclick="showTab('impact',this)">Impact</a>
+  <a href="#components" onclick="showTab('components',this)">Components</a>
+  <a href="#system" onclick="showTab('system',this)">System</a>
+  <a href="#team" onclick="showTab('team',this)">Team</a>
+  <a href="#thanks" onclick="showTab('thanks',this)">Thanks</a>
+  <button onclick="toggleNarration()">Narration: <span id="narrationState">OFF</span></button>
+</nav>
+
+<section id="about"><div class="hologram-scan">
+  <h2>About the Project</h2>
+  <p><strong>P.E.A.R.L x L.U.M.E.N</strong> is an advanced dual‑purpose innovation built to tackle two major challenges: flood safety and black water reuse. It is designed with modular hardware so it can be deployed in rural villages, urban cities, or disaster-prone coastal regions.</p>
+  <p>The <strong>P.E.A.R.L</strong> (Predictive Emergency Alert & Rescue Lights) system uses water pressure, GPS, and climate sensors to detect early flood risks. It sends instant alerts to local authorities and residents via GSM technology, ensuring maximum evacuation time.</p>
+  <p>The <strong>L.U.M.E.N</strong> (Light Utilization for Muddy Environments Navigation) system uses high-intensity LED arrays, laser beacons, and color-coded paths to guide people even through muddy floodwaters. It also powers a solar-driven filtration unit that treats black water through multi-layer sand & charcoal filtration followed by UV sterilization.</p>
+</div></section>
+
+<section id="impact"><div class="hologram-scan">
+  <h2>Real-Life Impact</h2>
+  <ul>
+    <li>🚨 <strong>Early Warning Saves Lives</strong> — Instant alerts reduce panic and ensure organized evacuation.</li>
+    <li>💡 <strong>Accessibility</strong> — Visual pathways aid not only in low visibility but also help the differently‑abled navigate to safety.</li>
+    <li>💧 <strong>Water Sustainability</strong> — Treated black water can be reused for agriculture, cleaning, or non-drinking purposes, reducing freshwater demand.</li>
+    <li>📦 <strong>Portable & Scalable</strong> — The system can be transported in compact kits and assembled in hours.</li>
+    <li>🌍 <strong>Climate Action</strong> — Contributes to UN Sustainable Development Goals (SDG 6: Clean Water, SDG 13: Climate Action).</li>
+    <li>🏥 <strong>Post-Disaster Recovery</strong> — Clean water availability prevents waterborne diseases in relief camps.</li>
+  </ul>
+</div></section>
+
+<section id="components"><div class="hologram-scan">
+  <h2>Components</h2>
+  <ul>
+    <li>Water Pressure Sensors</li>
+    <li>BME280 Climate Sensor</li>
+    <li>Neo6M GPS</li>
+    <li>GSM Module for Alerts</li>
+    <li>Solar Panels</li>
+    <li>LED Strips & Lasers</li>
+    <li>Multi-layer Charcoal & Sand Filters</li>
+    <li>UV Sterilizer</li>
+  </ul>
+</div></section>
+
+<section id="system"><div class="hologram-scan">
+  <h2>System Working</h2>
+  <ol>
+    <li>Detects abnormal water rise via sensors.</li>
+    <li>Verifies environmental conditions with climate module.</li>
+    <li>Sends SMS alerts to officials and residents.</li>
+    <li>Activates LED/laser guidance system.</li>
+    <li>Filters black water for non-potable uses.</li>
+  </ol>
+</div></section>
+
+<section id="team"><div class="hologram-scan">
+  <h2>Team</h2>
+  <div class="team-grid">
+    <div class="team-card"><div class="team-name">Lohit Raj</div><div class="team-role">Project Lead / Designer</div></div>
+    <div class="team-card"><div class="team-name">Nakshatraa</div><div class="team-role">Creative Builder</div></div>
+    <div class="team-card"><div class="team-name">Shriyan</div><div class="team-role">Electrical Head</div></div>
+    <div class="team-card"><div class="team-name">Srushti</div><div class="team-role">Model Artist</div></div>
+    <div class="team-card"><div class="team-name">Surya</div><div class="team-role">Wiring & Debugging</div></div>
+  </div>
+</div></section>
+
+<section id="thanks"><div class="hologram-scan">
+  <h2>Special Thanks</h2>
+  <p style="text-align:center;font-size:1.1rem;">
+    A heartfelt gratitude to <strong>Shriyan's family</strong> ❤️ for their incredible support, patience, and dedication — helping us build this model and project smoothly.  
+    Their time, effort, and hard work have been a key part of making  
+    <span style="color:#00e0ff;font-weight:bold;">P.E.A.R.L x L.U.M.E.N</span> a reality.
+  </p>
+</div></section>
+
+<footer id="footer">
+  &copy; 2025 P.E.A.R.L x L.U.M.E.N | Team Innovators
+</footer>
+
+<div class="ai-bubble" onclick="toggleChat()">💬</div>
+<div class="chatbot" id="chatbot">
+  <div class="chat-header">AI Assistant</div>
+  <div class="chat-messages" id="chatMessages"></div>
+  <div class="chat-input">
+    <input type="text" id="chatInput" placeholder="Ask a doubt...">
+    <button onclick="sendMessage()">Send</button>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+let narrationOn=false;
+
+function enterApp(){
+  document.getElementById('portalSound').play();
+  document.getElementById('bgMusic').play();
+  const portal=document.createElement('div');
+  portal.classList.add('portal');
+  document.getElementById('splash').appendChild(portal);
+  setTimeout(()=>{
+    document.getElementById('splash').style.display='none';
+    document.getElementById('nav').style.display='flex';
+    document.getElementById('footer').style.display='block';
+    showTab('about',document.querySelector('#nav a'));
+    chatbotGreeting();
+  },1500);
+}
+
+function showTab(id,link){
+  document.getElementById('scanSound').play();
+  document.querySelectorAll('section').forEach(s=>s.style.display='none');
+  document.getElementById(id).style.display='block';
+  document.querySelectorAll('nav a').forEach(a=>a.classList.remove('active'));
+  if(link) link.classList.add('active');
+  if(narrationOn) narrate(document.getElementById(id).innerText);
+}
+
+function toggleNarration(){
+  narrationOn=!narrationOn;
+  document.getElementById('narrationState').innerText=narrationOn?"ON":"OFF";
+}
+function narrate(text){
+  let utter=new SpeechSynthesisUtterance(text);
+  speechSynthesis.speak(utter);
+}
+
+// Chatbot
+function toggleChat(){
+  document.getElementById('pingSound').play();
+  const bot=document.getElementById('chatbot');
+  bot.style.bottom=(bot.style.bottom=="80px")?"-400px":"80px";
+}
+function chatbotGreeting(){
+  setTimeout(()=>{
+    addMessage("Hi, text me anytime you have to ask anything","bot");
+  },1000);
+}
+function sendMessage(){
+  let input=document.getElementById('chatInput');
+  let msg=input.value.trim();
+  if(!msg) return;
+  addMessage(msg,'user');
+  input.value='';
+  setTimeout(()=>addMessage(searchSite(msg),'bot'),500);
+}
+function addMessage(text,sender){
+  const div=document.createElement('div');
+  div.className='message '+sender;
+  div.textContent=text;
+  document.getElementById('chatMessages').appendChild(div);
+  document.getElementById('chatMessages').scrollTop=9999;
+}
+function searchSite(query){
+  let bodyText=document.body.innerText.toLowerCase();
+  query=query.toLowerCase();
+  if(bodyText.includes(query)){
+    return "I found something about that on this page: " + query;
+  } else {
+    return "I couldn't find it on the page. If connected to the internet, I could search online!";
+  }
+}
+
+// Hologram BG
+const scene=new THREE.Scene();
+const camera=new THREE.PerspectiveCamera(75,window.innerWidth/window.innerHeight,0.1,1000);
+const renderer=new THREE.WebGLRenderer({canvas:document.getElementById('bg'),alpha:true});
+renderer.setSize(window.innerWidth,window.innerHeight);
+camera.position.z=5;
+const geometry=new THREE.SphereGeometry(0.2,32,32);
+const material=new THREE.MeshBasicMaterial({color:0x00c6ff,wireframe:true});
+for(let i=0;i<30;i++){
+  let mesh=new THREE.Mesh(geometry,material);
+  mesh.position.set((Math.random()-0.5)*10,(Math.random()-0.5)*10,(Math.random()-0.5)*10);
+  scene.add(mesh);
+}
+function animate(){
+  requestAnimationFrame(animate);
+  scene.rotation.y+=0.001;
+  renderer.render(scene,camera);
+}
+animate();
+</script>
+</body>
+</html>
