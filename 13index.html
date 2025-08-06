@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Flood Alert App</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#1976d2" />
+  <style>
+    body { margin: 0; font-family: sans-serif; background: #e3f2fd; color: #0d47a1; }
+    header { background: #1976d2; color: white; padding: 1rem; text-align: center; }
+    .container { padding: 2rem; text-align: center; }
+    .alert { padding: 1rem; background: #ffc107; border-radius: 10px; margin: 1rem 0; }
+    button { padding: 1rem 2rem; border: none; background: #0d47a1; color: white; border-radius: 5px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Flood Alert System</h1>
+  </header>
+  <div class="container">
+    <h2>Stay Safe. Stay Alert.</h2>
+    <div class="alert" id="alertBox">Checking flood status...</div>
+    <button onclick="checkFlood()">Refresh Alert</button>
+  </div>
+
+  <script>
+    function checkFlood() {
+      const alertBox = document.getElementById('alertBox');
+      const floodAlerts = [
+        "⚠ Heavy Rainfall Expected. Stay Alert!",
+        "✅ No Flood Threat Detected. Stay Calm.",
+        "⚠ Water Levels Rising. Be Prepared!",
+        "✅ Weather is Clear. No Risk Now.",
+        "⚠ Flood Warning in Your Area. Evacuate if Advised."
+      ];
+      const randomAlert = floodAlerts[Math.floor(Math.random() * floodAlerts.length)];
+      alertBox.innerText = randomAlert;
+    }
+
+    // Run once on load
+    checkFlood();
+
+    // PWA service worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js');
+    }
+  </script>
+</body>
+</html>
